@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         app:button_colors="@array/colors"
         app:button_icons="@array/icons"
+        app:button_titles="@array/titles"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintLeft_toLeftOf="parent"

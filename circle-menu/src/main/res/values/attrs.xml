@@ -5,6 +5,8 @@
         <attr name="button_icons" format="reference"/>
         <!-- Array of buttons colors. -->
         <attr name="button_colors" format="reference"/>
+        <!-- Array of buttons titles. -->
+        <attr name="button_titles" format="reference"/>
         <!-- Menu default icon. -->
         <attr name="icon_menu" format="reference"/>
         <!-- Menu closed icon. -->

@@ -14,11 +14,15 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -201,22 +205,27 @@ public class CircleMenuView extends FrameLayout {
         final int menuButtonColor;
         final List<Integer> icons;
         final List<Integer> colors;
+        final List<String> titles;
 
         final TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.CircleMenuView, 0, 0);
         try {
             final int iconArrayId = a.getResourceId(R.styleable.CircleMenuView_button_icons, 0);
             final int colorArrayId = a.getResourceId(R.styleable.CircleMenuView_button_colors, 0);
+            final int titleArrayId = a.getResourceId(R.styleable.CircleMenuView_button_titles, 0);
 
             final TypedArray iconsIds = getResources().obtainTypedArray(iconArrayId);
             try {
                 final int[] colorsIds = getResources().getIntArray(colorArrayId);
+                final String[] titlesIds = getResources().getStringArray(titleArrayId);
                 final int buttonsCount = Math.min(iconsIds.length(), colorsIds.length);
 
                 icons = new ArrayList<>(buttonsCount);
                 colors = new ArrayList<>(buttonsCount);
+                titles = new ArrayList<>(buttonsCount);
 
                 for (int i = 0; i < buttonsCount; i++) {
                     icons.add(iconsIds.getResourceId(i, -1));
+                    titles.add(titlesIds[i]);
                     colors.add(colorsIds[i]);
                 }
             } finally {
@@ -242,7 +251,7 @@ public class CircleMenuView extends FrameLayout {
 
         initLayout(context);
         initMenu(menuButtonColor);
-        initButtons(context, icons, colors);
+        initButtons(context, icons, colors , titles);
     }
 
     /**
@@ -250,8 +259,9 @@ public class CircleMenuView extends FrameLayout {
      * @param context current context, will be used to access resources.
      * @param icons buttons icons resource ids array. Items must be @DrawableRes.
      * @param colors buttons colors resource ids array. Items must be @DrawableRes.
+     * @param titles buttons colors resource ids array. Items must be @DrawableRes.
      */
-    public CircleMenuView(@NonNull Context context, @NonNull List<Integer> icons, @NonNull List<Integer> colors) {
+    public CircleMenuView(@NonNull Context context, @NonNull List<Integer> icons, @NonNull List<Integer> colors , @Nullable List<String> titles) {
         super(context);
 
         final float density = context.getResources().getDisplayMetrics().density;
@@ -269,7 +279,7 @@ public class CircleMenuView extends FrameLayout {
 
         initLayout(context);
         initMenu(Color.WHITE);
-        initButtons(context, icons, colors);
+        initButtons(context, icons, colors , titles);
     }
 
     @Override
@@ -360,21 +370,49 @@ public class CircleMenuView extends FrameLayout {
         });
     }
 
-    private void initButtons(@NonNull Context context, @NonNull List<Integer> icons, @NonNull List<Integer> colors) {
+    private void initButtons(@NonNull Context context, @NonNull List<Integer> icons, @NonNull List<Integer> colors , @Nullable List<String> titles) {
         final int buttonsCount = Math.min(icons.size(), colors.size());
         for (int i = 0; i < buttonsCount; i++) {
+
+            final LinearLayout linearLayout = new LinearLayout(context);
+            linearLayout.setOrientation(LinearLayout.VERTICAL);
+            linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            linearLayout.setGravity(Gravity.CENTER);
+
             final FloatingActionButton button = new FloatingActionButton(context);
             button.setImageResource(icons.get(i));
             button.setBackgroundTintList(ColorStateList.valueOf(colors.get(i)));
             button.setClickable(true);
+
             button.setOnClickListener(new OnButtonClickListener());
             button.setOnLongClickListener(new OnButtonLongClickListener());
-            button.setScaleX(0);
-            button.setScaleY(0);
-            button.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+//            button.setScaleX(0);
+//            button.setScaleY(0);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            lp.setMargins(10 , 0 , 10 , 0);
+            button.setLayoutParams(lp);
+            linearLayout.addView(button);
 
-            addView(button);
-            mButtons.add(button);
+            if (titles != null && titles.size()>0) {
+                final TextView textView = new TextView(context);
+                textView.setText(titles.get(i));
+                textView.setTextColor(Color.WHITE);
+                textView.setMaxWidth(250);
+                textView.setEllipsize(TextUtils.TruncateAt.END);
+                textView.setMaxLines(1);
+                textView.setLines(1);
+                textView.setTextSize(9);
+                LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                lp.setMargins(0 , 5 , 0,0);
+                textView.setLayoutParams(lp1);
+
+                linearLayout.addView(textView);
+            }
+
+
+            addView(linearLayout);
+
+            mButtons.add(linearLayout);
         }
     }
 
@@ -452,7 +490,8 @@ public class CircleMenuView extends FrameLayout {
 
                     for (View b : mButtons) {
                         if (b != button) {
-                            ((FloatingActionButton) b).setCompatElevation(0);
+                            // TODO: 4/12/2020  
+//                            ((FloatingActionButton) b).setCompatElevation(0);
                         }
                     }
                 }
@@ -467,7 +506,8 @@ public class CircleMenuView extends FrameLayout {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     for (View b : mButtons) {
-                        ((FloatingActionButton) b).setCompatElevation(elevation);
+                        // TODO: 4/12/2020
+//                        ((FloatingActionButton) b).setCompatElevation(elevation);
                     }
 
                     ViewCompat.setZ(mRingView, elevation);
