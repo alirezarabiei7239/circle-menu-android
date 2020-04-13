@@ -13,6 +13,7 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -33,6 +34,7 @@ import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.ViewCompat;
 
 
@@ -141,7 +143,7 @@ public class CircleMenuView extends FrameLayout {
                 return;
             }
 
-            final Animator click = getButtonClickAnimation((FloatingActionButton)view);
+            final Animator click = getButtonClickAnimation((LinearLayout)view);
             click.setDuration(mDurationRing);
             click.addListener(new AnimatorListenerAdapter() {
                 @Override
@@ -171,7 +173,7 @@ public class CircleMenuView extends FrameLayout {
 
             final boolean result =  mListener.onButtonLongClick(CircleMenuView.this, mButtons.indexOf(view));
             if (result && !mIsAnimating) {
-                final Animator click = getButtonClickAnimation((FloatingActionButton)view);
+                final Animator click = getButtonClickAnimation((LinearLayout) view);
                 click.setDuration(mLongClickDurationRing);
                 click.addListener(new AnimatorListenerAdapter() {
                     @Override
@@ -382,10 +384,8 @@ public class CircleMenuView extends FrameLayout {
             final FloatingActionButton button = new FloatingActionButton(context);
             button.setImageResource(icons.get(i));
             button.setBackgroundTintList(ColorStateList.valueOf(colors.get(i)));
-            button.setClickable(true);
+//            button.setClickable(true);
 
-            button.setOnClickListener(new OnButtonClickListener());
-            button.setOnLongClickListener(new OnButtonLongClickListener());
 //            button.setScaleX(0);
 //            button.setScaleY(0);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -397,10 +397,11 @@ public class CircleMenuView extends FrameLayout {
                 final TextView textView = new TextView(context);
                 textView.setText(titles.get(i));
                 textView.setTextColor(Color.WHITE);
-                textView.setMaxWidth(250);
+                textView.setMaxWidth(150);
+                textView.setGravity(Gravity.CENTER);
                 textView.setEllipsize(TextUtils.TruncateAt.END);
-                textView.setMaxLines(1);
-                textView.setLines(1);
+                textView.setMaxLines(2);
+                textView.setLines(2);
                 textView.setTextSize(9);
                 LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
                 lp.setMargins(0 , 5 , 0,0);
@@ -408,6 +409,10 @@ public class CircleMenuView extends FrameLayout {
 
                 linearLayout.addView(textView);
             }
+
+            linearLayout.setClickable(true);
+            linearLayout.setOnClickListener(new OnButtonClickListener());
+            linearLayout.setOnLongClickListener(new OnButtonLongClickListener());
 
 
             addView(linearLayout);
@@ -430,7 +435,7 @@ public class CircleMenuView extends FrameLayout {
         }
     }
 
-    private Animator getButtonClickAnimation(final @NonNull FloatingActionButton button) {
+    private Animator getButtonClickAnimation(final @NonNull LinearLayout button) {
         final int buttonNumber = mButtons.indexOf(button) + 1;
         final float stepAngle = 360f / mButtons.size();
         final float rOStartAngle = (270 - stepAngle + stepAngle * buttonNumber);
@@ -458,7 +463,7 @@ public class CircleMenuView extends FrameLayout {
         mRingView.setVisibility(View.INVISIBLE);
         mRingView.setStartAngle(rStartAngle);
 
-        final ColorStateList csl = button.getBackgroundTintList();
+        final ColorStateList csl = button.getChildAt(0).getBackgroundTintList();
         if (csl != null) {
             mRingView.setStrokeColor(csl.getDefaultColor());
         }
@@ -485,13 +490,13 @@ public class CircleMenuView extends FrameLayout {
                     bringChildToFront(mRingView);
                     bringChildToFront(button);
                 } else {
-                    button.setCompatElevation(elevation + 1);
+                    button.setElevation(elevation + 1);
                     ViewCompat.setZ(mRingView, elevation + 1);
 
                     for (View b : mButtons) {
                         if (b != button) {
-                            // TODO: 4/12/2020  
-//                            ((FloatingActionButton) b).setCompatElevation(0);
+                            FloatingActionButton a = (FloatingActionButton) ((LinearLayout)b).getChildAt(0);
+                            a.setCompatElevation(0);
                         }
                     }
                 }
@@ -506,8 +511,8 @@ public class CircleMenuView extends FrameLayout {
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     for (View b : mButtons) {
-                        // TODO: 4/12/2020
-//                        ((FloatingActionButton) b).setCompatElevation(elevation);
+                        FloatingActionButton a = (FloatingActionButton) ((LinearLayout)b).getChildAt(0);
+                        a.setCompatElevation(elevation);
                     }
 
                     ViewCompat.setZ(mRingView, elevation);
